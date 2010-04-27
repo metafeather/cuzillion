@@ -1,6 +1,6 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
-# $Header: /home/sowrock/cvsroot/stevesouders.com/bin/resource.cgi,v 1.16 2009/10/27 21:36:03 sowrock Exp $
+# $Header: /home/sowrock/cvsroot/stevesouders.com/bin/resource.cgi,v 1.19 2010-03-01 17:24:34 sowrock Exp $
 
 ################################################################################
 # This CGI is used to simulate different types of components in an HTML page
@@ -26,6 +26,8 @@
 #           The response sets a cookie that is N characters in length.
 #     headers=1
 #           The response is JavaScript with an array containing each HTTP request header.
+#     size=N
+#           The size of the response.
 ################################################################################
 
 use URI::Escape;
@@ -184,6 +186,9 @@ sub genContent {
 
     if ( "css" eq $type ) {
         $content = ".sleepcgi { background: #EEE; color: #606; font-weight: bold; padding: 10px; }\n";
+		if ( $gParams{'size'} ) {
+			$content .= generate_random_css($gParams{'size'}) . "\n\n";
+		}
     }
 	elsif ( $gParams{'headers'} ) {
 		foreach $var (sort keys (%ENV)) {
@@ -193,6 +198,9 @@ sub genContent {
     }
     elsif ( "js" eq $type ) {
         $content = "var sleep_now = Number(new Date());\n\nfunction externalFunction1(i) { return i + 1; }\n\nwhile(sleep_now+$gParams{'jsdelay'}000>Number(new Date())) { var tmp = sleep_now; }\nif ( 'function' == typeof(scriptSleepOnload) ) scriptSleepOnload('http://" . $ENV{'HTTP_HOST'} . $ENV{'REQUEST_URI'} . "');\n";
+		if ( $gParams{'size'} ) {
+			$content .= generate_random_js($gParams{'size'}) . "\n\n";
+		}
     }
     elsif ( "xhr" eq $type ) { # might want to make this JSON
         $content = "XHR response from resource.cgi, epoch time = " . time() . "\n";
@@ -284,13 +292,55 @@ OUTPUT
 }
 
 
+
+# This function generates random strings of a given length
+sub generate_random_string {
+	my $length_of_randomstring=shift;
+	my @chars=('a'..'z','A'..'Z','0'..'9','_');
+	my $random_string;
+	foreach (1..$length_of_randomstring) {
+		# rand @chars will generate a random number between 0 and scalar @chars
+		$random_string .= $chars[rand @chars];
+	}
+
+	return $random_string;
+}
+
+
+sub generate_random_js {
+	my $size = shift;
+	my $cursize = 0;
+	my $result = "";
+	while ( $cursize < $size ) {
+		$result .= "var " . generate_random_string(8) . " = '" . generate_random_string(981) . "';\n";
+		$cursize = length($result);
+	}
+
+	return $result;
+}
+
+
+sub generate_random_css {
+	my $size = shift;
+	my $cursize = 0;
+	my $result = "";
+	while ( $cursize < $size ) {
+		$result .= "." . generate_random_string(32) . " { font-family: " . generate_random_string(300) . "; }\n";
+		$cursize = length($result);
+	}
+
+	return $result;
+}
+
+
 sub gifFile {
 	if ( $gParams{'giffile'} ) {
-		return "../images/" . $gParams{'giffile'};
+		my $giffile = $gParams{'giffile'};
+		$giffile =~ s/\//_/g;
+		return "../images/" . $giffile;
 	}
 	else {
 		my $i = rand(4);
 		return "../images/" . ("starfish1.gif", "barracuda.gif", "turtle2.gif", "crab3.gif")[$i];
 	}
 }
-
