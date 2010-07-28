@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# $Header: /home/sowrock/cvsroot/stevesouders.com/bin/resource.cgi,v 1.19 2010-03-01 17:24:34 sowrock Exp $
+# $Header: /home/sowrock/cvsroot/stevesouders.com/bin/resource.cgi,v 1.22 2010-07-07 05:12:53 sowrock Exp $
 
 ################################################################################
 # This CGI is used to simulate different types of components in an HTML page
@@ -22,8 +22,9 @@
 #           0   do not return a Last-Modified header
 #     redir=1
 #           1 means return a 302 redirect response that redirects right back with the "redir=1" removed
-#     cookie=N
-#           The response sets a cookie that is N characters in length.
+#     cookie=[N|t]
+#           The response sets a cookie named A that is N characters in length.
+#           If "cookie=t" is specified, the epoch time is returned as the A cookie.
 #     headers=1
 #           The response is JavaScript with an array containing each HTTP request header.
 #     size=N
@@ -142,7 +143,12 @@ sub genHeaders {
     }
 
 	if ( $gParams{'cookie'} ) {
-		$headers .= "Set-Cookie: A=" . ('a' x $gParams{'cookie'}) . "; path=/\n";
+		if ( "t" == $gParams{'cookie'} ) {
+			$headers .= "Set-Cookie: A=" . time() . "; path=/\n";
+		}
+		else {
+			$headers .= "Set-Cookie: A=" . ('a' x $gParams{'cookie'}) . "; path=/\n";
+		}
 	}
 
     # If requested, include an Expires (and Cache-Control) header in the past or future.
@@ -187,7 +193,7 @@ sub genContent {
     if ( "css" eq $type ) {
         $content = ".sleepcgi { background: #EEE; color: #606; font-weight: bold; padding: 10px; }\n";
 		if ( $gParams{'size'} ) {
-			$content .= generate_random_css($gParams{'size'}) . "\n\n";
+			$content .= generate_random_css($gParams{'size'} - length($content));
 		}
     }
 	elsif ( $gParams{'headers'} ) {
@@ -199,7 +205,7 @@ sub genContent {
     elsif ( "js" eq $type ) {
         $content = "var sleep_now = Number(new Date());\n\nfunction externalFunction1(i) { return i + 1; }\n\nwhile(sleep_now+$gParams{'jsdelay'}000>Number(new Date())) { var tmp = sleep_now; }\nif ( 'function' == typeof(scriptSleepOnload) ) scriptSleepOnload('http://" . $ENV{'HTTP_HOST'} . $ENV{'REQUEST_URI'} . "');\n";
 		if ( $gParams{'size'} ) {
-			$content .= generate_random_js($gParams{'size'}) . "\n\n";
+			$content .= generate_random_js($gParams{'size'} - length($content));
 		}
     }
     elsif ( "xhr" eq $type ) { # might want to make this JSON
@@ -210,17 +216,23 @@ sub genContent {
     }
     elsif ( "html" eq $type ) {
 		$sleepVal = $gParams{'sleep'};
-        $content = <<OUTPUT
+        $content1 = <<OUTPUT
 <html>
 <head>
 <title>resource.cgi test page</title>
 </head>
 <body bgcolor=#F0F0F0>
 This HTML document took $sleepVal seconds to return.
+OUTPUT
+    ;
+        $content2 = <<OUTPUT
 </body>
 </html>
 OUTPUT
     ;
+		$content = $content1 . 
+			( $gParams{'size'} ? generate_random_html($gParams{'size'} - length($content1 . $content2)) : "" ) .
+			$content2;
     }
     elsif ( "jsiframe" eq $type ) {
         $content = <<OUTPUT
@@ -296,7 +308,7 @@ OUTPUT
 # This function generates random strings of a given length
 sub generate_random_string {
 	my $length_of_randomstring=shift;
-	my @chars=('a'..'z','A'..'Z','0'..'9','_');
+	my @chars=('a'..'z','A'..'Z');
 	my $random_string;
 	foreach (1..$length_of_randomstring) {
 		# rand @chars will generate a random number between 0 and scalar @chars
@@ -311,8 +323,12 @@ sub generate_random_js {
 	my $size = shift;
 	my $cursize = 0;
 	my $result = "";
+	my $fixedCost = length("var abcdefgh='';\n");
 	while ( $cursize < $size ) {
-		$result .= "var " . generate_random_string(8) . " = '" . generate_random_string(981) . "';\n";
+		# Either use it all up, or make sure to leave enough to generate another line.
+		$rem = $size - $cursize;
+		$randSize = ( ((1000 + (2*$fixedCost)) < $rem ) ? 1000 : ($rem - $fixedCost) );
+		$result .= "var " . generate_random_string(8) . "='" . generate_random_string($randSize) . "';\n";
 		$cursize = length($result);
 	}
 
@@ -324,8 +340,29 @@ sub generate_random_css {
 	my $size = shift;
 	my $cursize = 0;
 	my $result = "";
+	my $fixedCost = length(".12345678901234567890123456789012 { font-family: ; }\n");
 	while ( $cursize < $size ) {
-		$result .= "." . generate_random_string(32) . " { font-family: " . generate_random_string(300) . "; }\n";
+		# Either use it all up, or make sure to leave enough to generate another line.
+		$rem = $size - $cursize;
+		$randSize = ( ((300 + (2*$fixedCost)) < $rem ) ? 300 : ($rem - $fixedCost) );
+		$result .= "." . generate_random_string(32) . " { font-family: " . generate_random_string($randSize) . "; }\n";
+		$cursize = length($result);
+	}
+
+	return $result;
+}
+
+
+sub generate_random_html {
+	my $size = shift;
+	my $cursize = 0;
+	my $result = "";
+	my $fixedCost = length("<p></p>\n");
+	while ( $cursize < $size ) {
+		# Either use it all up, or make sure to leave enough to generate another line.
+		$rem = $size - $cursize;
+		$randSize = ( ((300 + (2*$fixedCost)) < $rem ) ? 300 : ($rem - $fixedCost) );
+		$result .= "<p>" . generate_random_string($randSize) . "</p>\n";
 		$cursize = length($result);
 	}
 
@@ -344,3 +381,4 @@ sub gifFile {
 		return "../images/" . ("starfish1.gif", "barracuda.gif", "turtle2.gif", "crab3.gif")[$i];
 	}
 }
+
