@@ -5,7 +5,7 @@
 ################################################################################
 # This CGI is used to simulate different types of components in an HTML page
 # that take different lengths of time. Here are the CGI params and legal values:
-#     type=[gif|js|css|html|swf|xhr|jsxhr|jsiframe|cssiframe]
+#     type=[gif|js|json|css|html|swf|xhr|jsxhr|jsiframe|cssiframe]
 #           default is "gif"
 #     sleep=N
 #           N is a number of seconds for the server to wait before returning the response
@@ -53,10 +53,10 @@ exit 0;
 sub main {
     parseParams();
 
-    sleep($gParams{'sleep'}) if ( 0 < $gParams{'sleep'} );
-
     # I intentionally send the headers, THEN sleep, THEN send the content, so the browser gets a nibble of a first byte.
     print genHeaders();
+
+    sleep($gParams{'sleep'}) if ( 0 < $gParams{'sleep'} );
 
     print genContent();
 }
@@ -115,7 +115,7 @@ sub genHeaders {
 			my $port = $ENV{'SERVER_PORT'};
 			$location = ( 443 == $port ? "https://" : "http://" ) . "$host$uri?$querystring";
 		}
-		# Use the more aggressive 301 response to try and promote caching (since most browsers don't even cache 301s). 
+		# Use the more aggressive 301 response to try and promote caching (since most browsers don't even cache 301s).
 		my $status = $gParams{'status'} || 301;
 		$status = ( 301 <= $status && $status <= 307 ? $status : 301 );
         $headers = "Status: $status " . $gStatusText[$status] . "\nContent-Type: text/html\nLocation: $location\n";
@@ -125,6 +125,9 @@ sub genHeaders {
     }
     elsif ( "js" eq $type || $gParams{'headers'} ) {
         $headers = "Content-Type: application/x-javascript\n";
+    }
+    elsif ( "json" eq $type || $gParams{'headers'} ) {
+        $headers = "Content-Type: application/json\n";
     }
     elsif ( "html" eq $type || "xhr" eq $type || "cssiframe" eq $type || "jsiframe" eq $type || "jsxhr" eq $type ) {
         $headers = "Content-Type: text/html\n";
@@ -159,7 +162,7 @@ sub genHeaders {
 		$year += 1900;
 		my $expires =  sprintf("Expires: %s, %.2d %s %d %.2d:%.2d:%.2d GMT\n",
 							   ("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")[$wday],
-							   $day, 
+							   $day,
 							   ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")[$month],
 							   $year, $hour, $min, $sec);
 		$expires .= "Cache-Control: public, max-age=" . ( -1 == $gParams{'expires'} ? "0" : $expirationSeconds ) . "\n";
@@ -176,7 +179,7 @@ sub genHeaders {
 		$year += 1900;
 		my $last =  sprintf("Last-Modified: %s, %.2d %s %d %.2d:%.2d:%.2d GMT\n",
 							("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")[$wday],
-							$day, 
+							$day,
 							("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")[$month],
 							$year, $hour, $min, $sec);
 		$headers .= $last;
@@ -208,6 +211,15 @@ sub genContent {
 			$content .= generate_random_js($gParams{'size'} - length($content));
 		}
     }
+    elsif ( "json" eq $type ) {
+        $content = "{ message: 'XHR response from resource.cgi', epoch_time: " . time() . " }\n";
+		if ( $gParams{'size'} == 0 ) {
+			$content = "";
+		}
+		if ( $gParams{'size'} == 1 ) {
+			$content = "{}";
+		}
+    }
     elsif ( "xhr" eq $type ) { # might want to make this JSON
         $content = "XHR response from resource.cgi, epoch time = " . time() . "\n";
     }
@@ -230,7 +242,7 @@ OUTPUT
 </html>
 OUTPUT
     ;
-		$content = $content1 . 
+		$content = $content1 .
 			( $gParams{'size'} ? generate_random_html($gParams{'size'} - length($content1 . $content2)) : "" ) .
 			$content2;
     }
