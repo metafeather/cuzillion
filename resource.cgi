@@ -29,6 +29,10 @@
 #           The response is JavaScript with an array containing each HTTP request header.
 #     size=N
 #           The size of the response.
+#     length=N
+#           Attempt to set the Content-Length
+#     status=NNN
+#           Customize the status code, e.g. 401
 ################################################################################
 
 use URI::Escape;
@@ -43,6 +47,7 @@ $gStatusText[304] = "Not Found";
 $gStatusText[305] = "Use Proxy";
 $gStatusText[306] = "";
 $gStatusText[307] = "Temporary Redirect";
+$gStatusText[401] = "Authorization Required";
 
 
 main();
@@ -96,63 +101,74 @@ sub parseParams {
 sub genHeaders {
     my $headers = "";
     my $type = $gParams{'type'};
+		my $status = $gParams{'status'};
+		my $length = $gParams{'length'};
 
     if ( $gParams{'redir'} ) {
         my $querystring = $gQuerystring;
-		my $location = "";
-		if ( $gParams{'redirurl'} ) {
-			# RISKY - If a URL is provided, redirect to that URL.
-			$location = uri_unescape($gParams{'redirurl'});
-		}
-		else {
-			# Redir back to sleep.cgi without the redir param in the querystring.
-			$querystring =~ s/[&]*redir=[^&]*//g;
-			$querystring =~ s/^&//;  # make sure it doesn't start with "&"
+		    my $location = "";
+        if ( $gParams{'redirurl'} ) {
+          # RISKY - If a URL is provided, redirect to that URL.
+          $location = uri_unescape($gParams{'redirurl'});
+        }
+        else {
+          # Redir back to sleep.cgi without the redir param in the querystring.
+          $querystring =~ s/[&]*redir=[^&]*//g;
+          $querystring =~ s/^&//;  # make sure it doesn't start with "&"
 
-			my $uri = $ENV{'REQUEST_URI'};
-			$uri = $1 if ( $uri =~ /^(.*)\?/ );
-			my $host = $ENV{'HTTP_HOST'};
-			my $port = $ENV{'SERVER_PORT'};
-			$location = ( 443 == $port ? "https://" : "http://" ) . "$host$uri?$querystring";
-		}
-		# Use the more aggressive 301 response to try and promote caching (since most browsers don't even cache 301s).
-		my $status = $gParams{'status'} || 301;
-		$status = ( 301 <= $status && $status <= 307 ? $status : 301 );
-        $headers = "Status: $status " . $gStatusText[$status] . "\nContent-Type: text/html\nLocation: $location\n";
+          my $uri = $ENV{'REQUEST_URI'};
+          $uri = $1 if ( $uri =~ /^(.*)\?/ );
+          my $host = $ENV{'HTTP_HOST'};
+          my $port = $ENV{'SERVER_PORT'};
+          $location = ( 443 == $port ? "https://" : "http://" ) . "$host$uri?$querystring";
+        }
+        # Use the more aggressive 301 response to try and promote caching (since most browsers don't even cache 301s).
+        $status = ( 301 <= $status && $status <= 307 ? $status : 301 );
+        $headers .= "Status: $status " . $gStatusText[$status] . "\nContent-Type: text/html\nLocation: $location\n";
     }
-    elsif ( "css" eq $type ) {
-        $headers = "Content-Type: text/css\n";
-    }
-    elsif ( "js" eq $type || $gParams{'headers'} ) {
-        $headers = "Content-Type: application/x-javascript\n";
-    }
-    elsif ( "json" eq $type || $gParams{'headers'} ) {
-        $headers = "Content-Type: application/json\n";
-    }
-    elsif ( "html" eq $type || "xhr" eq $type || "cssiframe" eq $type || "jsiframe" eq $type || "jsxhr" eq $type ) {
-        $headers = "Content-Type: text/html\n";
-    }
-    elsif ( "swf" eq $type ) {
-        $headers = "Content-Type: application/x-shockwave-flash\n";
-    }
-    elsif ( "font" eq $type ) {
-        $headers = "Content-Type: " . (-1 == index($ENV{'HTTP_USER_AGENT'}, "MSIE") ? "font/ttf" : "application/octet-stream" )  . "\n";
-		if ( ! $gParams{'accessoff'} ) {
-			$headers .= "Access-Control-Allow-Origin: *\n";
-		}
-    }
-    else {  # gif
-        $headers = "Content-Type: image/gif\n";
+    elsif ( !$gParams{'redir'} ) {
+
+        if ($status) {
+            $headers .= "Status: $status " . $gStatusText[$status] . "\n";
+        }
+        if ($length) {
+            $headers .= "Content-Length: $length\n";
+        }
+
+        if ( "css" eq $type ) {
+            $headers .= "Content-Type: text/css\n";
+        }
+        elsif ( "js" eq $type || $gParams{'headers'} ) {
+            $headers .= "Content-Type: application/x-javascript\n";
+        }
+        elsif ( "json" eq $type ) {
+            $headers .= "Content-Type: application/json\n";
+        }
+        elsif ( "html" eq $type || "xhr" eq $type || "cssiframe" eq $type || "jsiframe" eq $type || "jsxhr" eq $type ) {
+            $headers .= "Content-Type: text/html\n";
+        }
+        elsif ( "swf" eq $type ) {
+            $headers .= "Content-Type: application/x-shockwave-flash\n";
+        }
+        elsif ( "font" eq $type ) {
+            $headers .= "Content-Type: " . (-1 == index($ENV{'HTTP_USER_AGENT'}, "MSIE") ? "font/ttf" : "application/octet-stream" )  . "\n";
+            if ( ! $gParams{'accessoff'} ) {
+              $headers .= "Access-Control-Allow-Origin: *\n";
+            }
+        }
+        else {  # gif
+            $headers .= "Content-Type: image/gif\n";
+        }
     }
 
-	if ( $gParams{'cookie'} ) {
-		if ( "t" == $gParams{'cookie'} ) {
-			$headers .= "Set-Cookie: A=" . time() . "; path=/\n";
-		}
-		else {
-			$headers .= "Set-Cookie: A=" . ('a' x $gParams{'cookie'}) . "; path=/\n";
-		}
-	}
+	  if ( $gParams{'cookie'} ) {
+        if ( "t" == $gParams{'cookie'} ) {
+          $headers .= "Set-Cookie: A=" . time() . "; path=/\n";
+        }
+        else {
+          $headers .= "Set-Cookie: A=" . ('a' x $gParams{'cookie'}) . "; path=/\n";
+        }
+    }
 
     # If requested, include an Expires (and Cache-Control) header in the past or future.
     if ( $gParams{'expires'} ) {
