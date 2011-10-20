@@ -231,7 +231,11 @@ sub genContent {
 		}
     }
     elsif ( "json" eq $type ) {
-        $content = "{ message: 'XHR response from resource.cgi', epoch_time: " . time() . " }\n";
+        $content = "{ \"message\": 'XHR response from resource.cgi', epoch_time: " . time() . " }\n";
+
+        if ( $gParams{'size'} ) {
+          $content = "{ \"message\": \"" . generate_random_string($gParams{'size'} - length($content)) . "\" }\n";
+        }
 
         if ( $gParams{'size'} eq '0') {
           $content = "";
