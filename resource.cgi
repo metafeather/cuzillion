@@ -74,7 +74,11 @@ sub parseParams {
         $querystring = $ENV{'QUERY_STRING'};
     }
     elsif ($ENV{'REQUEST_METHOD'} eq 'POST') {
-        read(STDIN, $querystring, $ENV{'CONTENT_LENGTH'});
+        $querystring = $ENV{'QUERY_STRING'};
+        #print STDERR "POST: resource.cgi: $querystring \n";
+
+        read(STDIN, $postdata, $ENV{'CONTENT_LENGTH'});
+        #print STDERR "POST: resource.cgi: $postdata \n";
     }
     else {
         $querystring = $ARGV[0];   # for commandline execution
