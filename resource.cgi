@@ -5,7 +5,7 @@
 ################################################################################
 # This CGI is used to simulate different types of components in an HTML page
 # that take different lengths of time. Here are the CGI params and legal values:
-#     type=[gif|js|json|css|html|swf|xhr|jsxhr|jsiframe|cssiframe]
+#     type=[gif|js|json|css|html|swf|xhr|jsxhr|jsiframe|cssiframe|plain]
 #           default is "gif"
 #     sleep=N
 #           N is a number of seconds for the server to wait before returning the response
@@ -144,6 +144,9 @@ sub genHeaders {
         elsif ( "json" eq $type ) {
             $headers .= "Content-Type: application/json\n";
         }
+        elsif ( "plain" eq $type ) {
+            $headers .= "Content-Type: text/plain\n";
+        }
         elsif ( "html" eq $type || "xhr" eq $type || "cssiframe" eq $type || "jsiframe" eq $type || "jsxhr" eq $type ) {
             $headers .= "Content-Type: text/html\n";
         }
@@ -211,9 +214,9 @@ sub genContent {
 
     if ( "css" eq $type ) {
         $content = ".sleepcgi { background: #EEE; color: #606; font-weight: bold; padding: 10px; }\n";
-		if ( $gParams{'size'} ) {
-			$content .= generate_random_css($gParams{'size'} - length($content));
-		}
+        if ( $gParams{'size'} ) {
+          $content .= generate_random_css($gParams{'size'} - length($content));
+        }
     }
 	elsif ( $gParams{'headers'} ) {
 		foreach $var (sort keys (%ENV)) {
@@ -241,6 +244,17 @@ sub genContent {
         }
         if ( $gParams{'success'} eq 'true' ) {
           $content = "{\"success\": true}";
+        }
+    }
+    elsif ( "plain" eq $type ) {
+        $content = "plain text, epoch_time: " . time() . " \n";
+
+        if ( $gParams{'size'} ) {
+          $content .= generate_random_string($gParams{'size'} - length($content)) . "\n";
+        }
+
+        if ( $gParams{'size'} eq '0') {
+          $content = "";
         }
     }
     elsif ( "xhr" eq $type ) { # might want to make this JSON
@@ -324,15 +338,15 @@ OUTPUT
         # Can't figure out a way to output a GIF in code, so read a file from disk.
         my $file = gifFile();
         if ( -e $file ) {
-			open(IN, $file);
-			while(<IN>) {
-				my $line = $_;
-				$content .= $line;
-			}
-		}
-		else {
-			print STDERR "ERROR: resource.cgi: couldn't open file \"$file\".\n";
-		}
+          open(IN, $file);
+          while(<IN>) {
+            my $line = $_;
+            $content .= $line;
+          }
+        }
+        else {
+          print STDERR "ERROR: resource.cgi: couldn't open file \"$file\".\n";
+        }
     }
 
     return $content;
