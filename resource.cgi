@@ -427,7 +427,8 @@ sub gifFile {
 	}
 	else {
 		my $i = rand(4);
-		return "../images/" . ("starfish1.gif", "barracuda.gif", "turtle2.gif", "crab3.gif")[$i];
+		#return "../images/" . ("starfish1.gif", "barracuda.gif", "turtle2.gif", "crab3.gif")[$i];
+		return "sleep.gif";
 	}
 }
 
