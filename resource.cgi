@@ -82,7 +82,7 @@ sub parseParams {
     $gQuerystring = $querystring;
 
     # Defaults:
-    $gParams{'type'} = "gif";
+    $gParams{'type'} = 'json'; #"gif";
     $gParams{'sleep'} = 0;
     $gParams{'jsdelay'} = 0;
     $gParams{'expires'} = 1;  # future Expires header
