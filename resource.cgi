@@ -229,12 +229,19 @@ sub genContent {
     }
     elsif ( "json" eq $type ) {
         $content = "{ message: 'XHR response from resource.cgi', epoch_time: " . time() . " }\n";
-		if ( $gParams{'size'} == 0 ) {
-			$content = "";
-		}
-		if ( $gParams{'size'} == 1 ) {
-			$content = "{}";
-		}
+
+        if ( $gParams{'size'} eq '0') {
+          $content = "";
+        }
+        if ( $gParams{'size'} eq '1' ) {
+          $content = "{}";
+        }
+        if ( $gParams{'success'} eq 'false' ) {
+          $content = "{\"success\": false }";
+        }
+        if ( $gParams{'success'} eq 'true' ) {
+          $content = "{\"success\": true}";
+        }
     }
     elsif ( "xhr" eq $type ) { # might want to make this JSON
         $content = "XHR response from resource.cgi, epoch time = " . time() . "\n";
