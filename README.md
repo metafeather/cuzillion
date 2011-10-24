@@ -10,7 +10,7 @@ There is a generic help page available for using the UI, which can be used to ge
 
 ## My fork of Cuzillion
 
-The *type=json* branch (and others at times) explores providing additional resource types for use in the development and QA of complex web applications and javascript data collection technologies.
+The *metafeather* branch (and others at times) explores providing additional resource types for use in the development and QA of complex web applications and javascript data collection technologies.
 
 ### Additional features
 
