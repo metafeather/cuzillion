@@ -48,6 +48,11 @@ $gStatusText[305] = "Use Proxy";
 $gStatusText[306] = "";
 $gStatusText[307] = "Temporary Redirect";
 $gStatusText[401] = "Authorization Required";
+$gStatusText[403] = "Forbidden";
+$gStatusText[404] = "File Not Found";
+$gStatusText[500] = "Internal Server Error";
+$gStatusText[503] = "Service Unavailable";
+$gStatusText[504] = "Gateway Time-out";
 
 
 main();
@@ -58,10 +63,10 @@ exit 0;
 sub main {
     parseParams();
 
+    sleep($gParams{'sleep'}) if ( 0 < $gParams{'sleep'} );
+
     # I intentionally send the headers, THEN sleep, THEN send the content, so the browser gets a nibble of a first byte.
     print genHeaders();
-
-    sleep($gParams{'sleep'}) if ( 0 < $gParams{'sleep'} );
 
     print genContent();
 }
