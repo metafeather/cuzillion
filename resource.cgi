@@ -287,9 +287,11 @@ sub genContent {
 <title>resource.cgi test page</title>
 </head>
 <body bgcolor=#F0F0F0>
-This HTML document took $sleepVal seconds to return and sets a javascript <code>window.name</code> value.
+<p>
+  This HTML document took $sleepVal seconds to return and sets a javascript <code>window.name</code> value.
+</p>
 <script type="text/javascript">
-window.name="resource.cgi test page content via window.name ";
+window.name="resource.cgi test page content via window.name";
 </script>
 </body>
 </html>
