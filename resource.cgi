@@ -33,6 +33,9 @@
 #           Attempt to set the Content-Length
 #     status=NNN
 #           Customize the status code, e.g. 401
+#     windowname=[0|1]
+#           0   do not return a window.name var containing the content
+#           0   return a window.name var containing the content
 ################################################################################
 
 use URI::Escape;
@@ -276,8 +279,25 @@ sub genContent {
     elsif ( "jsxhr" eq $type ) {
         $content = "var sleep_now = Number(new Date()); while(sleep_now+$gParams{'jsdelay'}000>Number(new Date())) { var tmp = sleep_now; } if ( 'function' == typeof(scriptSleepOnload) ) scriptSleepOnload('http://" . $ENV{'HTTP_HOST'} . $ENV{'REQUEST_URI'} . "');";
     }
+    elsif ( "html" eq $type && $gParams{'windowname'} ) {
+        $sleepVal = $gParams{'sleep'};
+        $content = <<OUTPUT
+<html>
+<head>
+<title>resource.cgi test page</title>
+</head>
+<body bgcolor=#F0F0F0>
+This HTML document took $sleepVal seconds to return and sets a javascript <code>window.name</code> value.
+<script type="text/javascript">
+window.name="resource.cgi test page content via window.name ";
+</script>
+</body>
+</html>
+OUTPUT
+    ;
+    }
     elsif ( "html" eq $type ) {
-		$sleepVal = $gParams{'sleep'};
+		    $sleepVal = $gParams{'sleep'};
         $content1 = <<OUTPUT
 <html>
 <head>
