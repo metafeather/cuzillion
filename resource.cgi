@@ -240,7 +240,7 @@ sub genContent {
 		}
     }
     elsif ( "json" eq $type ) {
-        $content = "{ \"message\": 'XHR response from resource.cgi', epoch_time: " . time() . " }\n";
+        $content = "{ \"message\": 'JSON response from resource.cgi', epoch_time: " . time() . " }\n";
 
         if ( $gParams{'size'} ) {
           $content = "{ \"message\": \"" . generate_random_string($gParams{'size'} - length($content)) . "\" }\n";
@@ -260,7 +260,7 @@ sub genContent {
         }
     }
     elsif ( "plain" eq $type ) {
-        $content = "plain text, epoch_time: " . time() . " \n";
+        $content = "plain text response from resource.cgi, epoch_time: " . time() . " \n";
 
         if ( $gParams{'size'} ) {
           $content .= generate_random_string($gParams{'size'} - length($content)) . "\n";
