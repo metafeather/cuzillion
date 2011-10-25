@@ -81,7 +81,7 @@ sub parseParams {
     if ($ENV{'REQUEST_METHOD'} eq 'GET') {
         $querystring = $ENV{'QUERY_STRING'};
     }
-    elsif ($ENV{'REQUEST_METHOD'} eq 'POST') {
+    elsif ($ENV{'REQUEST_METHOD'} eq 'POST' || $ENV{'REQUEST_METHOD'} eq 'PUT' || $ENV{'REQUEST_METHOD'} eq 'DELETE') {
         $querystring = $ENV{'QUERY_STRING'};
         #print STDERR "POST: resource.cgi: $querystring \n";
 
