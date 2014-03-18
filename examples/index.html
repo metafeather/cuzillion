@@ -1,0 +1,153 @@
+
+<!-- saved from url=(0034)http://stevesouders.com/cuzillion/ -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><script>
+var gTop = Number(new Date());
+var gScriptMsg = "";
+function cuz_addHandler(elem, sType, fn, capture) {
+    capture = (capture) ? true : false;
+    if (elem.addEventListener) {
+        elem.addEventListener(sType, fn, capture);
+    }
+    else if (elem.attachEvent) {
+        elem.attachEvent("on" + sType, fn);
+    }
+    else {
+        // Netscape 4
+        if ( elem["on" + sType] ) {
+            // Do nothing - we don't want to overwrite an existing handler.
+        }
+        else {
+            elem["on" + sType] = fn;
+        }
+    }
+}
+function doOnload() {
+	var end = Number(new Date());
+	if ( gScriptMsg && document.getElementById('loadedscripts') ) {
+		document.getElementById('loadedscripts').innerHTML += gScriptMsg;
+	}
+}
+cuz_addHandler(window, 'load', doOnload);
+var gbEnabled = false;
+function enableEdit() {
+	if ( gbEnabled ) return;
+	gbEnabled = true;
+	addStylesheet('cuzillion.1.1.css');
+	addScript('cuzillion.1.7.js');
+}
+function addStylesheet(url) {
+	var stylesheet = document.createElement('link');
+	stylesheet.rel = 'stylesheet';
+	stylesheet.type = 'text/css';
+	stylesheet.href =  url;
+	document.getElementsByTagName('head')[0].appendChild(stylesheet);
+}
+function addScript(url) {
+	var script = document.createElement('script');
+	script.src = url;
+	document.getElementsByTagName('head')[0].appendChild(script);
+}
+function scriptSleepOnload(sUrl) {
+	var now = Number(new Date());
+	var msg = "<nobr>" + (now - gTop) + "ms: \"" + sUrl + "\" done</nobr>\n";
+	if ( document.getElementById('loadedscripts') ) {
+		document.getElementById('loadedscripts').innerHTML += msg;
+	}
+	else {
+		gScriptMsg += msg;
+	}
+}
+function reloadPage(url) {
+	document.body.innerHTML = '';
+	document.location = url;
+}
+function cleanText(sText) {
+    return sText.replace(/<.*?>/g, '');
+}
+</script>
+
+
+<title>Cuzillion</title>
+<link rel="icon" href="http://stevesouders.com/cuzillion/favicon.ico" type="image/x-icon">
+<!--
+Copyright 2008 Google Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<link rel="stylesheet" type="text/css" href="./index_files/cuzillion.1.1.css">
+</head>
+
+<body style="margin: 0px; padding: 0px; font-family: &quot;Trebuchet MS&quot;, &quot;Bitstream Vera Serif&quot;, Utopia, &quot;Times New Roman&quot;, times, serif;">
+
+<div style="background: #333; color: white; padding: 8px;">
+  <div style="float:right; margin-top: 2px;">
+    <a href="http://stevesouders.com/cuzillion/help.php#examples" style="color: white; font-size: 0.9em; text-decoration: none;">Examples</a>&nbsp;|&nbsp;<a href="http://stevesouders.com/cuzillion/help.php" style="color: white; font-size: 0.9em; text-decoration: none;">Help</a><br><a href="http://stevesouders.com/" style="color: white; font-size: 0.9em; text-decoration: none;">stevesouders.com</a>
+  </div>
+  <font style="font-size: 2em; font-weight: bold; margin-right: 10px;"><a href="./index_files/index.html" style="color:white; text-decoration: none;"><img border="0" src="./index_files/logo-32x32.gif">&nbsp;Cuzillion</a></font><i>'cuz there are a zillion pages to check</i>
+</div>
+
+<div id="content" style="margin: 8px;">
+
+
+
+<div id="floattray" style="float: left; width: 170px; margin-right: 30px;">
+  <div id="step1text" style="text-align: left; margin: 0 0 4px 4px; height: 50px; padding-top: 12px;">1. add components,</div>
+  <div id="comptray"><a href="http://stevesouders.com/cuzillion/add" class="component traybtn extjs" style="width: 140px; margin: 8px; margin-top: 0;" id="extjs" onclick="addComponent(&#39;extjs&#39;, &#39;inhead&#39;); return false;">external script</a>
+<a href="http://stevesouders.com/cuzillion/add" class="component traybtn injs" style="width: 140px; margin: 8px;" id="injs" onclick="addComponent(&#39;injs&#39;, &#39;inhead&#39;); return false;">inline script</a>
+<a href="http://stevesouders.com/cuzillion/add" class="component traybtn extcss" style="width: 140px; margin: 8px;" id="extcss" onclick="addComponent(&#39;extcss&#39;, &#39;inhead&#39;); return false;">external stylesheet</a>
+<a href="http://stevesouders.com/cuzillion/add" class="component traybtn incss" style="width: 140px; margin: 8px;" id="incss" onclick="addComponent(&#39;incss&#39;, &#39;inhead&#39;); return false;">inline style</a>
+<a href="http://stevesouders.com/cuzillion/add" class="component traybtn image" style="width: 140px; margin: 8px;" id="image" onclick="addComponent(&#39;image&#39;, &#39;inbody&#39;); return false;">image</a>
+<a href="http://stevesouders.com/cuzillion/add" class="component traybtn iframe" style="width: 140px; margin: 8px;" id="iframe" onclick="addComponent(&#39;iframe&#39;, &#39;inbody&#39;); return false;">iframe</a>
+
+</div>
+</div>
+
+<div id="pageavatar" style="float: left; width: 310px; margin-right: 30px;">
+  <div id="step2text" style="text-align: left; margin: 0 0 4px 4px; height: 50px; padding-top: 12px;">2. arrange and modify,</div>
+  <div style="background: #CCC; border: 1px solid black; ">
+    <code style="font-size: 1.2em; font-weight: bold; color: #666666; display: block;">&lt;HTML&gt;</code>
+    <code style="font-size: 1.2em; font-weight: bold; color: #666666; display: block;">&lt;HEAD&gt;</code>
+    <div class="drop" style="border: 1px solid #EEE; background: #EEE; padding: 12px 0 12px 0; width: 300px; margin: 0 0 0 4px;">
+	  <ul style="margin: 0; padding: 0;" id="inhead"></ul>
+	  <div id="inheadTarget"></div>
+	</div>
+    <code style="font-size: 1.2em; font-weight: bold; color: #666666; display: block;">&lt;/HEAD&gt;</code>
+    <code style="font-size: 1.2em; font-weight: bold; color: #666666; display: block;">&lt;BODY&gt;</code>
+    <div class="drop" style="border: 1px solid #EEE; background: #EEE; padding: 12px 0 12px 0; width: 300px; margin: 0 0 0 4px;">
+	  <ul style="margin: 0; padding: 0;" id="inbody"></ul>
+	  <div id="inbodyTarget"></div>
+	</div>
+    <code style="font-size: 1.2em; font-weight: bold; color: #666666; display: block;">&lt;/BODY&gt;</code>
+    <code style="font-size: 1.2em; font-weight: bold; color: #666666; display: block;">&lt;/HTML&gt;</code>
+  </div>
+  <div id="loadtime" style="text-align: left; margin-top: 10px;"></div>
+  <div id="loadedscripts" style="text-align: left; margin-top: 10px; width: 300px; font-size: 0.9em;"></div>
+</div> <!-- end pageavatar -->
+
+<div style="position: absolute; left: 560px;">
+  <div id="step3text" style="text-align: left; margin: 0 0 4px 4px; height: 50px; padding-top: 12px;">3. create the page...</div>
+  <div id="pagesubmit" style="text-align: left;"><input type="button" value="Create" onclick="submitPage()">&nbsp;&nbsp;<input type="button" value="Clear" onclick="clearPage()"></div>
+</div>
+
+<div style="clear: both;">
+</div>
+
+</div> <!-- content -->
+
+<script src="./index_files/cuzillion.1.7.js"></script><div id="sortHelper" style="display: none;">&nbsp;</div><div id="dragHelper" style="position: absolute; display: none; cursor: move; list-style: none; overflow: hidden;"></div>
+
+
+
+
+
+</body></html>
